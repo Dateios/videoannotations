@@ -344,10 +344,12 @@
       var wt = document.getElementById("write");
       wt.onclick = function(e){
         var text = document.getElementById('para').value;
-        var texts = text.split(".");
-        texts.pop();
+        var texts = text.split("\n");
+        console.log(texts)
+        // texts.pop();
         for(var i=0;i<texts.length;i++){
-          texts[i] += ".";
+          // texts[i] += ".";
+          // console.log(texts[i]);
         }
         // console.log(texts);
         if($("#para").val() == ""){
@@ -509,7 +511,7 @@
         $("#descriptions1").html("");
         $("#sentence").html("");
         for(var i=0;i<cur_descriptions.length;i++){
-          d1.innerHTML += cur_descriptions[i] + " ";
+          // d1.innerHTML += cur_descriptions[i] + " ";
           st.innerHTML += "<tr onclick='change(this)'><th>" + (i+1) + "</th><th>" + cur_descriptions[i] + "</th><th>" + cur_timestamps[i][0] + "</th><th>" + cur_timestamps[i][1] + "</th></tr>";
         }
       }
