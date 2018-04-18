@@ -1,0 +1,562 @@
+
+<!-- saved from url=(0054)https://cs.stanford.edu/people/ranjaykrishna/densevid/ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"> <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>video annotations</title>
+
+  <!-- bootstrap -->
+  <link rel="stylesheet" href="./css/bootstrap.min.css">
+  <link rel="stylesheet" href="./css/bootstrap-theme.min.css">
+
+  <!-- Google fonts -->
+  <link href="./css/css" rel="stylesheet" type="text/css">
+
+  <!-- Google Analytics -->
+  <link rel="stylesheet" type="text/css" href="./css/style.css">
+  <script async="" src="./js/analytics.js.下载"></script><script>
+  function page_loaded() {
+  }
+  </script>
+  <link href="./css/bootstrap.min.css" rel="stylesheet">
+   <!-- <script src="./js/jquery-1.12.4.js.下载"></script>
+  // <script src="./js/jquery-1.12.4.min.js.下载"></script> -->
+  <script src="./js/jquery.min.js.下载"></script>
+  <link rel="stylesheet" href="//apps.bdimg.com/libs/jqueryui/1.10.4/css/jquery-ui.min.css">
+  <!-- // <script src="//apps.bdimg.com/libs/jquery/1.10.2/jquery.min.js"></script> -->
+  <script src="//apps.bdimg.com/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+  <!-- <link rel="stylesheet" href="jqueryui/style.css"> -->
+  <script src="./js/bootstrap.min.js.下载"></script>
+  <script src="./js/underscore-min.js.下载"></script>
+  <style type="text/css">
+    .normal {
+      font-size: 20px;
+    }
+  .center{
+    margin: auto;
+    text-align:left;
+    position: relative;
+    width:800px;
+  }
+  .center_vid{
+    margin: 0 auto;
+    display: block;
+  }
+  button{
+    margin:auto;
+    margin-top:10px;
+    margin-bottom:10px;
+    display:block;
+  }
+  canvas{
+    margin:auto;
+    position:relative;
+    display:block;
+  }
+  th, td {
+    padding: 15px;
+  }
+  </style>
+</head>
+<body onload="page_loaded()" cz-shortcut-listen="true">
+
+<div id="header">
+  <h1>video annotations</h1>
+  <div style="clear:both;"></div>
+</div>
+
+<div class="container sec">
+    <div class="row" style="">
+      <video id="exp-video" class="center_vid" controls="" muted="" preload="auto" width="800" height="450" data-setup="{}">
+        <source id="source1" src="" type="video/mp4">
+      </video><p>
+      <form name="playrate" class="center" style="font-size:120%"> <b>Customizable playback rate</b>
+          <input type="radio" name="group" value="0.5">0.5x
+          <input type="radio" name="group" value="1">1x
+          <input type="radio" name="group" value="2">2x
+          <input type="radio" name="group" value="4">4x
+      </form><p>
+      
+      <div class="center" style="text-align:center">
+        <div id="writing" style="display:none">
+          <textarea id="para" rows="4" cols="110">
+          Please write a paragraph here...
+          </textarea>
+          <button id="write" type="button" class="btn btn-primary">Done writing Paragraph</button>
+        </div>
+
+        <div id="labeling">
+          <p><label for="timestamp">timestamps：</label>
+          <input type="text" id="timestamp" style="border:0; color:#f6931f; font-weight:bold;"></p>
+          <div id="slider-range"></div><p>
+          
+          <div id="descriptions1" class="center" style="font-size:130%;margin-bottom:15px"></div>
+          <button id="edit" type="button" class="btn btn-primary">Edit Paragraph</button>
+          <!-- <button id="delete" type="button" class="btn btn-primary">Delete Paragraph</button> -->
+          <p><p><p>
+          <table id="sentence" border="1" width="100%" style="text-align:center"></table>
+          <button id="saveInterval" type="button" class="btn btn-primary">Save Interval for Selected Sentence</button>
+          <canvas class="center" id="canvas1" width="800" height="140"> Your browser does not support the HTML5 canvas tag.</canvas>
+        </div>
+      </div>
+      <div class="center" style="text-align:center">
+        <button id="last" type="button" class="btn btn-primary pull-left" style="margin-bottom:10px">Previous Video</button>
+        <button id="next" type="button" class="btn btn-primary pull-right" style="margin-bottom:10px">Next Video</button>
+      </div>
+    </div>
+</div>
+
+<!-- jQuery and Boostrap -->
+<!-- <script src="./js/jquery.min.js.下载"></script>
+<script src="./js/bootstrap.min.js.下载"></script> -->
+
+<!-- Analytics -->
+<script>
+</script>
+
+<div></div>
+<script>
+    
+    var dataUrl = "383239.json";
+    var data = [];
+    var times = [];
+    function ajaxCall(){
+      return $.ajax({
+        url: dataUrl,
+        dataType: "json",
+        async:false,
+      });
+    }
+    ajaxCall().done(function(result){
+      data = result;
+    }).fail(function(){
+      alert("An error occured calling ajax!");
+    });
+    var selected_set = Object.keys(data);
+    console.log(Object.keys(data).length);
+    var source1 = document.getElementById("source1");
+    source1.src = "./video/383239-1.mp4";
+    /*
+    for (i = 0; i < data.length; i++){
+      p_i = data[i]["timestaken"];
+      var sum = 0;
+      for(j = 0; j < 5; j++){
+        var sum = sum + p_i[j];
+      }
+      times.push(sum);
+    }
+    var s = 0;
+    for (i = 0; i < times.length; i++){
+      s = s + times[i];
+    }
+    console.log(s);
+    console.log(times.length);
+    console.log("On average turkers spend " + Math.floor(s/(times.length*60)) + " minutes on the task, " + Math.floor(s/(1065*60)) + " minutes per video.");
+
+    */
+    // Get elements
+    // Initial constant setup
+    var total_num = Object.keys(data).length;
+    var v_start = 50;
+    var space_between = 10;
+    var stroke_size = 10;
+    var video_num = 0;
+    // Total width of the play, volume, time and maximize button of video control bar
+    // Constant, independent of window size
+    var left_width = 108;
+    var right_width = 188;
+
+    var cur_vid = "";
+    var duration = 0;
+    var cur_timestamps = [];
+    var cur_descriptions = [];
+    var badlist = [];
+    var result_str = {};
+    /*
+    for(var i=0; i<data.length;i++){
+      for (var j=0; j<5; j++){
+        var first = data[i]['timestamps'][j][0][1];
+        if (data[i]['timestamps'][j][1][1] != null){
+          var second = data[i]['timestamps'][j][1][1];
+          if (first == second){
+            badlist.push(data[i]['names'][j]);
+          }
+        }
+      }
+    }
+    for(var i=0; i<data.length;i++){
+      for (var j=0; j<5; j++){
+        if(data[i]['timestamps'][j].length > 1){
+          if(data[i]['timestamps'][j][0][1] == data[i]['timestamps'][j][1][1]){
+            badlist.push(data[i]['names'][j]);
+          }
+        }
+      }
+    }
+    console.log(JSON.stringify(badlist));
+    */
+    function prepareData(index){
+        cur_vid = selected_set[video_num];
+        cur_duration = data[cur_vid]['duration'];
+        cur_timestamps = data[cur_vid]['timestamps'];
+        cur_descriptions = data[cur_vid]['sentences'];
+      }
+
+    function sliderInit(){
+      $("#slider-range").slider({
+          range: true,
+          min: 0,
+          max: data[cur_vid]['duration'],
+          step: 0.01,
+          values: [ 0, data[cur_vid]['duration'] ],
+          slide: function( event, ui ) {
+            $( "#timestamp" ).val( ui.values[ 0 ] + "s - " + ui.values[ 1 ] + "s");
+          }
+        });
+      $( "#timestamp" ).val($( "#slider-range" ).slider( "values", 0 ) +
+      "s - " + $( "#slider-range" ).slider( "values", 1 ) + "s");
+    }
+
+    var changeIndex = -1
+    var changeFlag = false
+    function change(obj){
+        obj.style.backgroundColor="green";
+        changeIndex = obj.rowIndex;
+        // document.getElementById("labeling").style.display="none";
+        // document.getElementById("writing").style.display="inline";
+        
+        $( "#slider-range" ).slider( 'values' , 0, cur_timestamps[changeIndex][0] );
+        $( "#slider-range" ).slider( 'values' , 1, cur_timestamps[changeIndex][1] );
+        $( "#timestamp" ).val($( "#slider-range" ).slider( "values", 0 ) +
+      "s - " + $( "#slider-range" ).slider( "values", 1 ) + "s");
+    }
+
+    function downloadasJson(fileName, content){
+        var aTag = document.createElement('a');
+        var blob = new Blob([content]);
+        aTag.download = fileName;
+        aTag.href = URL.createObjectURL(blob);
+        aTag.click();
+        URL.revokeObjectURL(blob);
+    }
+
+    // Global constant to hold the list of timestamps, list of video names
+    //var LIST_OF_V = ["v_STAvUAslEYM.mp4", "v_yWONID7ysSI.mp4", "v_ZmkJColoU0M.mp4", "v_qNHfEf72V3g.mp4", "v_l5xW6UZWwBs.mp4"];
+    // var LIST_OF_V = simpleamt.getInput(LIST_OF_V);
+    // Dictionary to hold, for each video:
+    //  - the timestamps 
+    //  - playbackRates
+    //  - duration
+    //  - name
+    // each attribute is currently organized as a list
+    /*
+    var count_new = 0;
+    var cur_p = [];
+    var cur_pp = [];
+    for(var i=0; i<3;i++){
+      cur_p = descriptions[i];
+      for(var j=0; j<cur_p.length; j++){
+        cur_pp = cur_p[j];
+        for(var k=0; k<cur_pp.length; k++){
+          count_new = count_new + cur_pp[k].split(" ").length;
+        }
+      }
+    }
+
+    console.log("Average paragraph length: " + count_new/(15));
+    */
+    var colors = ["#FFFF00", "#1CE6FF", "#FF34FF", "#FF4A46", "#008941", "#006FA6", "#A30059","#FFDBE5", "#7A4900", "#0000A6", "#63FFAC", "#B79762", "#004D43", "#8FB0FF", "#997D87","#5A0007", "#809693", "#FEFFE6", "#1B4400", "#4FC601", "#3B5DFF", "#4A3B53", "#FF2F80","#61615A", "#BA0900", "#6B7900", "#00C2A0", "#FFAA92", "#FF90C9", "#B903AA", "#D16100","#DDEFFF", "#000035", "#7B4F4B", "#A1C299", "#300018", "#0AA6D8", "#013349", "#00846F","#372101", "#FFB500", "#C2FFED", "#A079BF", "#CC0744", "#C0B9B2", "#C2FF99", "#001E09","#00489C", "#6F0062", "#0CBD66", "#EEC3FF", "#456D75", "#B77B68", "#7A87A1", "#788D66","#885578", "#FAD09F", "#FF8A9A", "#D157A0", "#BEC459", "#456648", "#0086ED", "#886F4C","#34362D", "#B4A8BD", "#00A6AA", "#452C2C", "#636375", "#A3C8C9", "#FF913F", "#938A81","#575329", "#00FECF", "#B05B6F", "#8CD0FF", "#3B9700", "#04F757", "#C8A1A1", "#1E6E00","#7900D7", "#A77500", "#6367A9", "#A05837", "#6B002C", "#772600", "#D790FF", "#9B9700","#549E79", "#FFF69F", "#201625", "#72418F", "#BC23FF", "#99ADC0", "#3A2465", "#922329","#5B4534", "#FDE8DC", "#404E55", "#0089A3", "#CB7E98", "#A4E804", "#324E72", "#6A3A4C"];
+
+    // Define time update listener for all video tags
+    $(document).ready(function(){
+      var c1 = document.getElementById('canvas1');
+      var start = 0;
+      var end = c1.width;
+      var v_start = 40;
+      var stroke_size = 10;
+      var left_width = 108;
+      var right_width = 216;
+      var bar_width = 476;
+      var total_width = bar_width + left_width + right_width;
+      var ctx1 = c1.getContext("2d");
+      var video = document.getElementById("exp-video");
+      var d1 = document.getElementById("descriptions1");
+      video.playbackRate = 2;
+      prepareData(video_num);
+      sliderInit();
+      
+      clearDisplay();
+      displayDescriptions(video_num);
+      source1.src = "./video/" + cur_vid + ".mp4";
+      video.load();
+      video.playbackRate = 2;
+      video.play();
+      video.ontimeupdate = function(){
+        var drawspeed = c1.width * (bar_width/total_width) / video.duration;
+        start = c1.width * (left_width / total_width);
+        end = c1.width * (left_width + bar_width) / total_width;
+        var percent = Math.floor((100 / video.duration) * video.currentTime);
+        if ((video.currentTime > 0 && video.readyState > 2 && !video.paused)){
+          if (percent <= 100){
+            var y = 0;
+            ctx1.clearRect(0, 0, c1.width, c1.height);
+            ctx1.font = "18px sans serif";
+            ctx1.fillStyle = "#000000";
+            ctx1.fillText("Annotation " + ":", 0, v_start);
+            y = y + 2;
+            drawBar(cur_timestamps, v_start+y*space_between, c1, ctx1, video.duration);
+          }
+        }
+      }
+
+
+      // Define playbackRate listener
+      var playrates = document.forms["playrate"].elements["group"];
+      for (var i = 0; i < playrates.length; i++){
+        playrates[i].onclick = function(){
+          video.playbackRate = this.value;
+        }
+      }
+
+      // Edit
+      var ed = document.getElementById("edit");
+      ed.onclick = function(e){
+        document.getElementById("labeling").style.display="none";
+        document.getElementById("writing").style.display="inline";
+        
+        if (changeFlag == false) {
+          // $("#para").focus(function(){  
+          //   this.value='';  
+          // });
+          $("#para").val("");
+        }else{
+          // $("#para").val(cur_descriptions[changeIndex]);
+          var text = ""
+          for(var i=0;i<cur_descriptions.length;i++){
+            text += cur_descriptions[i];
+          }
+          $("#para").val(text);
+        }
+         
+      }
+
+      // Write
+      var wt = document.getElementById("write");
+      wt.onclick = function(e){
+        var text = document.getElementById('para').value;
+        var texts = text.split(".");
+        texts.pop();
+        for(var i=0;i<texts.length;i++){
+          texts[i] += ".";
+        }
+        // console.log(texts);
+        if($("#para").val() == ""){
+          alert("paragraph is null.");
+        }else{
+          // if (changeFlag == true) {
+            cur_descriptions = [];
+            cur_descriptions = texts;
+            cur_timestamps = [];
+            for(var i=0;i<texts.length;i++){
+              cur_timestamps.push([$( "#slider-range" ).slider( "values", 0 ), $( "#slider-range" ).slider( "values", 1 )]);
+            }
+            changeFlag = false;
+
+            // cur_descriptions.push(text);
+          // }else{
+            // cur_descriptions[changeIndex] = text;
+          // }
+          // console.log(changeIndex)
+          // console.log(cur_descriptions);
+          displayDescriptions(video_num);
+          document.getElementById("labeling").style.display="inline";
+          document.getElementById("writing").style.display="none";
+        }
+      }
+
+      // Save
+      var si = document.getElementById("saveInterval");
+      si.onclick = function(e){
+        if (changeIndex < 0) {
+          // if(cur_descriptions.length == cur_timestamps.length + 1){
+          //   cur_timestamps.push([$( "#slider-range" ).slider( "values", 0 ), $( "#slider-range" ).slider( "values", 1 )]);
+          // }
+          alert("Please choose one sentence.");
+        }else{
+          cur_timestamps[changeIndex] = [$( "#slider-range" ).slider( "values", 0 ), $( "#slider-range" ).slider( "values", 1 )];
+        }
+        // console.log(changeIndex)
+        // console.log(cur_timestamps);
+        changeIndex = -1
+        displayDescriptions(video_num);
+      }
+
+      // Delete
+      // var dl = document.getElementById("delete");
+      // dl.onclick = function(e){
+      //   if (changeIndex >= 0) {
+      //     cur_descriptions.splice(changeIndex ,1);
+      //     cur_timestamps.splice(changeIndex ,1);
+      //     // console.log(cur_descriptions);
+      //     // console.log(cur_timestamps);
+      //     displayDescriptions(video_num);
+      //     changeIndex = -1
+      //   }else{
+      //     alert("Please choose one paragraph.");
+      //   }
+      // }
+
+      // Previous Video button
+      var lb = document.getElementById("last");
+      lb.onclick = function(e){
+        for(var i=0;i<data.length;i++){
+          ctx1.clearRect(0, 0, c1.width, c1.height);
+        }
+        if (video_num > 0){
+          video_num = video_num - 1;
+          prepareData(video_num);
+          clearDisplay();
+          displayDescriptions(video_num);
+          var source1 = document.getElementById("source1");
+          video.pause();
+          source1.src = "./video/" + cur_vid + ".mp4";
+          video.load();
+          video.playbackRate = 2;
+          lb.blur();
+          video.play();
+        }
+        else{
+          alert("This is the first video!");
+        }
+      }
+      
+      // Next Video button
+      var nb = document.getElementById("next");
+      nb.onclick = function(e){
+        video_num = video_num + 1;
+        result_str[cur_vid] = {"duration":cur_duration, "timestamps":cur_timestamps,"sentences":cur_descriptions};
+
+        if(video_num <= total_num - 1){
+          space_taken = 0;
+          for(var i=0;i<data.length;i++){
+            ctx1.clearRect(0, 0, c1.width, c1.height);
+          }
+          var source1 = document.getElementById("source1");
+          video.pause();
+          prepareData(video_num);
+          console.log(cur_vid);
+          console.log(cur_timestamps);
+          clearDisplay();
+          displayDescriptions(video_num);
+          source1.src = "./video/" + cur_vid + ".mp4";
+          video.load();
+          video.playbackRate = 2;
+          nb.blur();
+          video.play();
+
+          
+        }
+        else{
+          video_num = video_num - 1;
+          alert("This is the last sample annotation!");
+
+          str_pretty = JSON.stringify(result_str)
+          console.log(str_pretty)
+          downloadasJson("train.json", str_pretty);
+        }
+      }
+      /*
+      console.log(simpleamt.isPreview());
+      if (!simpleamt.isPreview()) {
+        simpleamt.setupSubmit();
+        $("#submit-btn").click(function() {
+          if(video_num != LIST_OF_V.length-1){
+            alert("Please finish the task for all videos!");
+            return false;
+          }
+          else{
+            simpleamt.setOutput(web_data);
+          }
+        });
+      }
+      */
+
+      function getCurrentIntervals(p, v_name, data){
+        var names = data[p].names;
+        var last_i = 0;
+        for(i = 0; i < names.length; i++){
+          if (names[i] == v_name){
+            last_i = i;
+          }
+        }
+        var intervals = (data[p].timestamps)[last_i];
+        return intervals;
+      }
+      function getCurrentDescriptions(p, v_name, data){
+        var names = data[p].names;
+        var last_i = 0;
+        for(i = 0; i < names.length; i++){
+          if (names[i] == v_name){
+            last_i = i;
+          }
+        }
+        var descriptions = (data[p].descriptions)[last_i];
+        return descriptions;
+      }
+
+      function displayDescriptions(video_num){
+        var st = document.getElementById("sentence");
+        $("#descriptions1").html("");
+        $("#sentence").html("");
+        for(var i=0;i<cur_descriptions.length;i++){
+          d1.innerHTML += cur_descriptions[i] + " ";
+          st.innerHTML += "<tr onclick='change(this)'><th>" + (i+1) + "</th><th>" + cur_descriptions[i] + "</th><th>" + cur_timestamps[i][0] + "</th><th>" + cur_timestamps[i][1] + "</th></tr>";
+        }
+      }
+      function clearDisplay(){
+        // d1.innerHTML = "Annotation: ";
+        $("#descriptions1").html("");
+        $("#sentence").html("");
+      }
+
+      function drawBar(timestamps, v_pos, canvas, context, duration){
+        c1.height = timestamps.length * 20 + 80;
+        var drawspeed = canvas.width * (bar_width/total_width) / duration;
+        var cumulative_space = 0;
+        context.lineWidth=3;
+        context.beginPath();
+        context.strokeStyle="#000000";
+        context.moveTo(start,v_pos);
+        context.lineTo(end,v_pos);
+        context.stroke();
+        context.closePath();
+        context.font = "18px sans serif";
+        cumulative_space = cumulative_space + 20;
+        for(var i=0;i<timestamps.length;i++){
+          if(typeof timestamps[i] !== "undefined"){
+            context.beginPath();
+            var cur_color = colors[i%colors.length];
+            context.strokeStyle=cur_color;
+            context.fillStyle = cur_color;
+            var i_pos = start+(drawspeed*timestamps[i][0]);
+            var j_pos = start+(drawspeed*timestamps[i][1]);
+            context.moveTo(i_pos,v_pos+cumulative_space);
+            context.lineTo(i_pos,v_pos+cumulative_space+stroke_size);
+            context.lineTo(i_pos,v_pos+cumulative_space-stroke_size);
+            context.moveTo(i_pos,v_pos+cumulative_space);
+            context.lineTo(j_pos,v_pos+cumulative_space);
+            context.moveTo(j_pos,v_pos+cumulative_space);
+            context.lineTo(j_pos,v_pos+cumulative_space+stroke_size);
+            context.lineTo(j_pos,v_pos+cumulative_space-stroke_size);
+            context.fillText(i+1, start+((timestamps[i][0]+((timestamps[i][1]-timestamps[i][0])/2))/duration)*(end-start), v_pos+cumulative_space+stroke_size+5);
+            context.stroke();
+            context.closePath();
+            cumulative_space = cumulative_space + 20;
+          }
+        }
+      }
+    })
+  </script>
+
+
+</body></html>
